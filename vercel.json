@@ -1,6 +1,5 @@
 {
-  "$schema": "https://openapi.vercel.sh/vercel.json",
-  "framework": "vite",
+  "version": 2,
   "buildCommand": "bun run build",
   "outputDirectory": ".output/public",
   "rewrites": [
@@ -10,4 +9,3 @@
     }
   ]
 }
-
