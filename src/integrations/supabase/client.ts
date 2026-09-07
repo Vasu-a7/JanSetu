@@ -33,17 +33,33 @@ function createSupabaseClient() {
   // Fall back to process.env for SSR (server-side rendering)
   const SUPABASE_URL =
     import.meta.env['VITE_SUPABASE_URL'] ||
-    process.env['SUPABASE_URL'] ||
-    'https://placeholder-civic-commons.supabase.co';
+    (typeof process !== 'undefined' ? process.env?.['SUPABASE_URL'] : undefined) ||
+    'https://juhexxbonapzkbabgibv.supabase.co';
   const SUPABASE_PUBLISHABLE_KEY =
     import.meta.env['VITE_SUPABASE_PUBLISHABLE_KEY'] ||
-    process.env['SUPABASE_PUBLISHABLE_KEY'] ||
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.placeholder';
+    import.meta.env['VITE_SUPABASE_ANON_KEY'] ||
+    (typeof process !== 'undefined' ? process.env?.['SUPABASE_PUBLISHABLE_KEY'] : undefined) ||
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp1aGV4eGJvbmFwemtiYWJnaWJ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg2MzAxNjgsImV4cCI6MjEwNDIwNjE2OH0.vxghFDNr5bBEulZ5p6NO2HzIPmg2GTCLUkChoh3qC-Q';
 
-  if (SUPABASE_URL.includes('placeholder')) {
-    console.warn(
-      '[Supabase] Using placeholder Supabase credentials. Add VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY in .env to connect live Supabase project.'
+  const hasValidSupabaseConfig =
+    SUPABASE_URL &&
+    !SUPABASE_URL.includes('placeholder') &&
+    SUPABASE_PUBLISHABLE_KEY &&
+    !SUPABASE_PUBLISHABLE_KEY.includes('placeholder');
+
+  if (!hasValidSupabaseConfig) {
+    const configurationError = new Error(
+      'Supabase is not configured yet. Add VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY (or VITE_SUPABASE_ANON_KEY) to your .env.local file and restart the app.'
     );
+
+    return new Proxy({} as ReturnType<typeof createClient<Database>>, {
+      get() {
+        throw configurationError;
+      },
+      set() {
+        return true;
+      },
+    });
   }
 
   return createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
