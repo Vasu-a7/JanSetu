@@ -1,0 +1,24 @@
+{
+  "name": "JanSetu — Connecting Citizens and Administration",
+  "short_name": "JanSetu",
+  "description": "Connecting Citizens and Administration to address community challenges and public services.",
+  "start_url": "/",
+  "id": "/",
+  "display": "standalone",
+  "background_color": "#F9F8F6",
+  "theme_color": "#F9F8F6",
+  "icons": [
+    {
+      "src": "/images/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/images/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
