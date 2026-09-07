@@ -31,88 +31,121 @@ function formatTitleCase(text: string): string {
 }
 
 function categorizeLocally(description: string): ChallengeClassification {
-  const text = description.toLowerCase();
+  // Strip generated boilerplate before classifying so we analyze ONLY the user's core report
+  let userText = description
+    .toLowerCase()
+    .replace(/^📌\s*issue summary:\s*/gim, "")
+    .replace(/ground impact.*$/gim, "")
+    .replace(/recommended action.*$/gim, "")
+    .replace(/action requested.*$/gim, "")
+    .trim();
 
+  if (!userText) userText = description.toLowerCase();
+
+  // 1. Lighting, Electricity & Power (handles Hinglish & typos like "liight", "bijli", "andhera", "light")
   if (
-    text.includes("water") ||
-    text.includes("pipe") ||
-    text.includes("leak") ||
-    text.includes("drain") ||
-    text.includes("sewer") ||
-    text.includes("supply")
-  ) {
-    return { category: "Sanitation & Water Resources", priority: "High" };
-  }
-  if (
-    text.includes("hospital") ||
-    text.includes("doctor") ||
-    text.includes("health") ||
-    text.includes("medicine") ||
-    text.includes("clinic") ||
-    text.includes("disease") ||
-    text.includes("medical")
-  ) {
-    return { category: "Healthcare & Sanitation", priority: "High" };
-  }
-  if (
-    text.includes("school") ||
-    text.includes("student") ||
-    text.includes("teacher") ||
-    text.includes("education") ||
-    text.includes("book") ||
-    text.includes("college") ||
-    text.includes("class")
-  ) {
-    return { category: "Education & Schools", priority: "Medium" };
-  }
-  if (
-    text.includes("farm") ||
-    text.includes("crop") ||
-    text.includes("fertilizer") ||
-    text.includes("seed") ||
-    text.includes("agriculture") ||
-    text.includes("irrigation") ||
-    text.includes("farmer")
-  ) {
-    return { category: "Agriculture & Rural Development", priority: "Medium" };
-  }
-  if (
-    text.includes("garbage") ||
-    text.includes("trash") ||
-    text.includes("waste") ||
-    text.includes("pollution") ||
-    text.includes("tree") ||
-    text.includes("plastic") ||
-    text.includes("clean") ||
-    text.includes("environment")
-  ) {
-    return { category: "Waste Management & Environment", priority: "Medium" };
-  }
-  if (
-    text.includes("light") ||
-    text.includes("lamp") ||
-    text.includes("electric") ||
-    text.includes("wire") ||
-    text.includes("power")
+    userText.includes("light") ||
+    userText.includes("liight") ||
+    userText.includes("bijli") ||
+    userText.includes("power") ||
+    userText.includes("lamp") ||
+    userText.includes("electric") ||
+    userText.includes("wire") ||
+    userText.includes("taar") ||
+    userText.includes("current") ||
+    userText.includes("voltage") ||
+    userText.includes("transformer") ||
+    userText.includes("meter") ||
+    userText.includes("andhera") ||
+    userText.includes("dark")
   ) {
     return { category: "Street Lighting & Power", priority: "High" };
   }
+
+  // 2. Roads, Potholes & Infrastructure
   if (
-    text.includes("road") ||
-    text.includes("pothole") ||
-    text.includes("bridge") ||
-    text.includes("traffic") ||
-    text.includes("footpath") ||
-    text.includes("street")
+    userText.includes("road") ||
+    userText.includes("sadak") ||
+    userText.includes("pothole") ||
+    userText.includes("gaddha") ||
+    userText.includes("gaddhe") ||
+    userText.includes("bridge") ||
+    userText.includes("traffic") ||
+    userText.includes("footpath") ||
+    userText.includes("street") ||
+    userText.includes("jam")
   ) {
     return { category: "Roads & Public Infrastructure", priority: "High" };
   }
+
+  // 3. Water Supply, Drainage & Sanitation
   if (
-    text.includes("crime") ||
-    text.includes("police") ||
-    text.includes("safety") ||
-    text.includes("theft") ||
-    text.includes("cyber")
+    userText.includes("water") ||
+    userText.includes("pani") ||
+    userText.includes("paani") ||
+    userText.includes("pipe") ||
+    userText.includes("leak") ||
+    userText.includes("drain") ||
+    userText.includes("naala") ||
+    userText.includes("naali") ||
+    userText.includes("sewer") ||
+    userText.includes("supply") ||
+    userText.includes("tank")
+  ) {
+    return { category: "Sanitation & Water Resources", priority: "High" };
+  }
+
+  // 4. Waste Management & Environment
+  if (
+    userText.includes("garbage") ||
+    userText.includes("kachra") ||
+    userText.includes("trash") ||
+    userText.includes("waste") ||
+    userText.includes("pollution") ||
+    userText.includes("tree") ||
+    userText.includes("clean") ||
+    userText.includes("safai") ||
+    userText.includes("environment") ||
+    userText.includes("dump")
+  ) {
+    return { category: "Waste Management & Environment", priority: "Medium" };
+  }
+
+  // 5. Healthcare
+  if (
+    userText.includes("hospital") ||
+    userText.includes("doctor") ||
+    userText.includes("health") ||
+    userText.includes("medicine") ||
+    userText.includes("dawa") ||
+    userText.includes("clinic") ||
+    userText.includes("disease") ||
+    userText.includes("medical")
+  ) {
+    return { category: "Healthcare & Sanitation", priority: "High" };
+  }
+
+  // 6. Education
+  if (
+    userText.includes("school") ||
+    userText.includes("student") ||
+    userText.includes("teacher") ||
+    userText.includes("education") ||
+    userText.includes("college") ||
+    userText.includes("padhai") ||
+    userText.includes("class")
+  ) {
+    return { category: "Education & Schools", priority: "Medium" };
+  }
+
+  // 7. Public Safety & Crime
+  if (
+    userText.includes("crime") ||
+    userText.includes("police") ||
+    userText.includes("theft") ||
+    userText.includes("chori") ||
+    userText.includes("cyber") ||
+    userText.includes("fraud")
   ) {
     return { category: "Public Safety & Law", priority: "High" };
   }
@@ -127,7 +160,6 @@ export async function categorizeChallenge(description: string): Promise<Challeng
 
   const apiKey = import.meta.env["VITE_GEMINI_API_KEY"];
   if (!apiKey || apiKey.startsWith("AQ.Ab8RN")) {
-    // Smart local AI fallback when remote API key is unavailable/placeholder
     return categorizeLocally(description);
   }
 
@@ -148,9 +180,18 @@ export async function categorizeChallenge(description: string): Promise<Challeng
           systemInstruction: {
             parts: [
               {
-                text: `You are an AI civic classifier. Return ONLY a valid JSON object with exactly two fields: "category" and "priority".
-The "category" MUST be a concise, professional 2-4 word civic category name suited for the report (for example: "Sanitation & Drainage", "Street Lighting", "Road Traffic & Safety", "Cybercrime & Fraud", "Public Healthcare", "Water Supply", "Waste Management", "Public Safety", etc. You can generate ANY relevant category name, do NOT restrict to a predefined list).
-The "priority" MUST be one of: "High", "Medium", "Low".`,
+                text: `You are an expert AI civic report classifier for JanSetu in India.
+Analyze the user's issue description (which may be in English, Hindi, Devanagari, or Hinglish with phonetic spellings/typos like 'liight', 'sadak', 'pani', 'bijli', 'kachra').
+Classify it into a concise civic category. Examples:
+- "Street Lighting & Power" (for electricity, light outage, power, wires, transformer)
+- "Roads & Public Infrastructure" (for sadak, potholes, traffic, bridges)
+- "Sanitation & Water Resources" (for water supply, pipeline leakage, drainage, naali)
+- "Waste Management & Environment" (for kachra, garbage, trash dump, pollution)
+- "Healthcare & Sanitation" (for hospital, doctor, medicine, health)
+- "Education & Schools" (for school, college, student, padhai)
+- "Public Safety & Law" (for crime, police, theft, fraud)
+
+Return ONLY a valid JSON object with "category" and "priority" ("High", "Medium", "Low").`,
               },
             ],
           },
@@ -271,5 +312,90 @@ Return ONLY the converted Hinglish text without any markdown, quotes, or explana
       : localHinglishConverter(speechText);
   } catch (error) {
     return localHinglishConverter(speechText);
+  }
+}
+
+function localEnhancer(rawText: string): string {
+  let clean = rawText.trim();
+  if (!clean) return "";
+
+  // Strip any pre-existing section headers & repetitive boilerplate to prevent nesting
+  clean = clean
+    .replace(/^📌\s*Issue Summary:\s*/gim, "")
+    .replace(/^⚠️\s*Ground Impact & Urgency:\s*/gim, "")
+    .replace(/^🛠️\s*Recommended Action:\s*/gim, "")
+    .replace(/^Issue Summary:\s*/gim, "")
+    .replace(/^Ground Impact & Safety Risk:\s*/gim, "")
+    .replace(/^Ground Impact:\s*/gim, "")
+    .replace(/^Action Requested:\s*/gim, "")
+    .replace(/This civic issue directly affects local residents.*?(?=\n\n|\n|$)/gim, "")
+    .replace(/Immediate site inspection.*?(?=\n\n|\n|$)/gim, "")
+    .replace(/Urgent attention is recommended.*?(?=\n\n|\n|$)/gim, "")
+    .replace(/Prompt site assessment is advised.*?(?=\n\n|\n|$)/gim, "")
+    .replace(/Inspection, site clearance.*?(?=\n\n|\n|$)/gim, "")
+    .replace(/\n\s*\n/g, "\n")
+    .trim();
+
+  // Extract core statement (first line)
+  const coreStatement = clean.split("\n")[0]?.trim() || clean;
+
+  return `📌 Issue Summary:\n${coreStatement}\n\n⚠️ Ground Impact & Urgency:\nThis civic issue impacts local residents, daily commuters, and neighborhood safety. Prompt site assessment is advised.\n\n🛠️ Recommended Action:\nInspection, site clearance, and structural repair by municipal authorities or university research project leads.`;
+}
+
+export async function enhanceDescription(rawDescription: string): Promise<string> {
+  if (!rawDescription.trim()) return "";
+
+  const apiKey = import.meta.env["VITE_GEMINI_API_KEY"];
+  if (!apiKey || apiKey.startsWith("AQ.Ab8RN")) {
+    return localEnhancer(rawDescription);
+  }
+
+  try {
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [
+                {
+                  text: `Enhance and expand this user's rough civic issue description into a structured, professional, clear report:\n\n${rawDescription}`,
+                },
+              ],
+            },
+          ],
+          systemInstruction: {
+            parts: [
+              {
+                text: `You are an AI Civic Report Enhancer for JanSetu.
+Take the user's input (which may be a short note or speech in English, Hindi, or Hinglish) and rewrite it into a clean 3-part report:
+📌 Issue Summary: (what the problem is)
+⚠️ Ground Impact & Urgency: (who it affects and severity)
+🛠️ Recommended Action: (what local authorities should inspect and resolve)
+
+Return ONLY the enhanced description text without markdown block quotes or explanations.`,
+              },
+            ],
+          },
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      return localEnhancer(rawDescription);
+    }
+
+    const data = await response.json();
+    const resultText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+
+    return resultText && resultText.trim()
+      ? resultText.trim().replace(/^["']|["']$/g, "")
+      : localEnhancer(rawDescription);
+  } catch (error) {
+    return localEnhancer(rawDescription);
   }
 }

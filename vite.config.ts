@@ -25,7 +25,7 @@ export default defineConfig({
         devOptions: {
           enabled: true
         },
-        includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
+        includeAssets: ['logo.png', 'favicon.png', 'favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
         manifest: {
           name: 'JanSetu',
           short_name: 'JanSetu',

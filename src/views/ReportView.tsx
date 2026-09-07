@@ -1,6 +1,6 @@
 import { useRef, useState, type ChangeEvent, type FormEvent } from "react";
-import { LoaderCircle, MapPin, Mic, Radio, Sparkles, Upload, UserCheck, Volume2 } from "lucide-react";
-import { categorizeChallenge, convertToHinglish, defaultCategories, type ChallengeCategory } from "@/lib/geminiAI";
+import { LoaderCircle, MapPin, Mic, Radio, Sparkles, Upload, UserCheck, Volume2, Wand2 } from "lucide-react";
+import { categorizeChallenge, convertToHinglish, defaultCategories, enhanceDescription, type ChallengeCategory } from "@/lib/geminiAI";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -29,12 +29,38 @@ export function ReportView() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [isConvertingVoice, setIsConvertingVoice] = useState(false);
+  const [isEnhancing, setIsEnhancing] = useState(false);
   const [speechLang, setSpeechLang] = useState<"hi-IN" | "en-IN">("hi-IN");
   const [transcriptText, setTranscriptText] = useState("");
   const [formMessage, setFormMessage] = useState<{
     type: "error" | "success";
     text: string;
   } | null>(null);
+
+  async function runAiEnhanceDescription() {
+    if (!description.trim()) {
+      toast.error("Please type a short description or voice note first before enhancing.");
+      return;
+    }
+
+    setIsEnhancing(true);
+    toast.info("AI is enhancing and structuring your report description...");
+    try {
+      const enhanced = await enhanceDescription(description);
+      setDescription(enhanced);
+      toast.success("Description enhanced with AI! You can edit any text directly in the input box.");
+
+      setIsCategorizing(true);
+      const catResult = await categorizeChallenge(enhanced);
+      setCategory(catResult.category);
+    } catch (err) {
+      console.error("Enhance error", err);
+      toast.error("Could not enhance description.");
+    } finally {
+      setIsEnhancing(false);
+      setIsCategorizing(false);
+    }
+  }
 
   async function runAiCategorize() {
     if (!description.trim()) {
@@ -76,101 +102,83 @@ export function ReportView() {
       (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
 
     if (!SpeechRecognition) {
-      toast.error("Speech Recognition is not supported in this browser. Please use Chrome or Edge.");
+      toast.error("Voice Typing is not supported in this browser. Please use Google Chrome or MS Edge.");
       return;
     }
 
-    keepListeningRef.current = true;
-    transcriptRef.current = "";
-    setTranscriptText("");
-    setIsListening(true);
-    toast.info(`Mic ON (${speechLang === "hi-IN" ? "Hindi" : "English"}). Speak now! Click mic again when done.`);
+    try {
+      const recognition = new SpeechRecognition();
+      recognitionRef.current = recognition;
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      recognition.lang = speechLang;
 
-    const launchRecognition = () => {
-      if (!keepListeningRef.current) return;
+      keepListeningRef.current = true;
+      transcriptRef.current = "";
+      setTranscriptText("");
+      setIsListening(true);
+      toast.info(`Microphone ON (${speechLang === "hi-IN" ? "Hindi" : "English"}). Speak now! Click mic button when finished.`);
 
-      try {
-        const recognition = new SpeechRecognition();
-        recognitionRef.current = recognition;
-        recognition.continuous = true;
-        recognition.interimResults = true;
-        recognition.lang = speechLang;
+      recognition.onstart = () => {
+        setIsListening(true);
+      };
 
-        recognition.onstart = () => {
-          setIsListening(true);
-        };
-
-        recognition.onresult = (event: any) => {
-          let currentSessionText = "";
-          for (let i = event.resultIndex; i < event.results.length; i++) {
-            currentSessionText += event.results[i][0].transcript;
-          }
-          const combined = (transcriptRef.current + " " + currentSessionText).trim();
-          setTranscriptText(combined);
-        };
-
-        recognition.onerror = (event: any) => {
-          console.log("Speech recognition status:", event.error);
-          if (event.error === "not-allowed") {
-            keepListeningRef.current = false;
-            setIsListening(false);
-            toast.error("Microphone permission denied. Allow mic access in browser settings.");
-          }
-        };
-
-        recognition.onend = async () => {
-          if (transcriptText.trim()) {
-            transcriptRef.current = transcriptText.trim();
-          }
-
-          if (keepListeningRef.current) {
-            setTimeout(() => {
-              if (keepListeningRef.current) {
-                launchRecognition();
-              }
-            }, 100);
-          } else {
-            setIsListening(false);
-            recognitionRef.current = null;
-            const finalTranscript = (transcriptRef.current || transcriptText).trim();
-
-            if (finalTranscript) {
-              setIsConvertingVoice(true);
-              toast.info("Converting speech to Hinglish with AI...");
-              try {
-                const hinglishResult = await convertToHinglish(finalTranscript);
-                const finalDesc = description ? `${description}\n${hinglishResult}` : hinglishResult;
-                setDescription(finalDesc);
-
-                if (!title.trim()) {
-                  setTitle(hinglishResult.slice(0, 50) + (hinglishResult.length > 50 ? "..." : ""));
-                }
-
-                toast.success("Voice converted to Hinglish!");
-
-                setIsCategorizing(true);
-                const catResult = await categorizeChallenge(finalDesc);
-                setCategory(catResult.category);
-              } catch (err) {
-                console.error("Conversion error", err);
-              } finally {
-                setIsConvertingVoice(false);
-                setIsCategorizing(false);
-              }
-            }
-          }
-        };
-
-        recognition.start();
-      } catch (e) {
-        console.error("Mic start exception", e);
-        if (keepListeningRef.current) {
-          setTimeout(launchRecognition, 200);
+      recognition.onresult = (event: any) => {
+        let currentText = "";
+        for (let i = 0; i < event.results.length; i++) {
+          currentText += event.results[i][0].transcript + " ";
         }
-      }
-    };
+        const trimmed = currentText.trim();
+        transcriptRef.current = trimmed;
+        setTranscriptText(trimmed);
+      };
 
-    launchRecognition();
+      recognition.onerror = (event: any) => {
+        console.warn("Speech recognition notice:", event.error);
+        if (event.error === "not-allowed" || event.error === "service-not-allowed") {
+          keepListeningRef.current = false;
+          setIsListening(false);
+          toast.error("Microphone permission denied. Please allow microphone access in your browser settings.");
+        }
+      };
+
+      recognition.onend = async () => {
+        setIsListening(false);
+        const finalSpokenText = transcriptRef.current.trim() || transcriptText.trim();
+
+        if (finalSpokenText) {
+          setIsConvertingVoice(true);
+          toast.info("Processing spoken text...");
+          try {
+            const hinglishResult = await convertToHinglish(finalSpokenText);
+            const textToInsert = hinglishResult || finalSpokenText;
+            setDescription((prev) => (prev ? `${prev}\n${textToInsert}` : textToInsert));
+            
+            if (!title.trim()) {
+              setTitle(textToInsert.slice(0, 50) + (textToInsert.length > 50 ? "..." : ""));
+            }
+            toast.success("Voice text added to description!");
+
+            setIsCategorizing(true);
+            const catResult = await categorizeChallenge(textToInsert);
+            setCategory(catResult.category);
+          } catch (err) {
+            console.error("Hinglish conversion fallback:", err);
+            setDescription((prev) => (prev ? `${prev}\n${finalSpokenText}` : finalSpokenText));
+            toast.success("Voice text added to description!");
+          } finally {
+            setIsConvertingVoice(false);
+            setIsCategorizing(false);
+          }
+        }
+      };
+
+      recognition.start();
+    } catch (err) {
+      console.error("Voice recognition start error:", err);
+      setIsListening(false);
+      toast.error("Could not start microphone. Please check browser microphone permissions.");
+    }
   }
 
   async function handleDescriptionBlur() {
@@ -400,8 +408,24 @@ export function ReportView() {
               Detailed Description
             </label>
 
-            {/* Voice Input Controls */}
-            <div className="flex items-center gap-2">
+            {/* Voice & AI Controls */}
+            <div className="flex flex-wrap items-center gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={runAiEnhanceDescription}
+                disabled={isEnhancing || !description.trim()}
+                className="gap-1.5 font-semibold text-xs border-primary/30 text-primary hover:bg-primary/5 shadow-xs"
+              >
+                {isEnhancing ? (
+                  <LoaderCircle className="size-3.5 animate-spin text-primary" />
+                ) : (
+                  <Sparkles className="size-3.5 text-primary" />
+                )}
+                {isEnhancing ? "Enhancing..." : "Enhance Description with AI ✨"}
+              </Button>
+
               <div className="inline-flex rounded-lg border border-border p-0.5 text-xs bg-muted/50">
                 <button
                   type="button"
@@ -412,7 +436,7 @@ export function ReportView() {
                       : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
-                  🇮🇳 Hindi (हिन्दी)
+                  🇮🇳 Hindi
                 </button>
                 <button
                   type="button"
@@ -433,22 +457,63 @@ export function ReportView() {
                 size="sm"
                 onClick={startVoiceTyping}
                 disabled={isConvertingVoice}
-                className="gap-1.5 font-medium shadow-xs"
+                className="gap-1.5 font-medium shadow-xs text-xs"
               >
                 {isConvertingVoice ? (
-                  <LoaderCircle className="size-4 animate-spin text-primary" />
+                  <LoaderCircle className="size-3.5 animate-spin text-primary" />
                 ) : isListening ? (
-                  <Radio className="size-4 animate-pulse text-destructive-foreground" />
+                  <Radio className="size-3.5 animate-pulse text-destructive-foreground" />
                 ) : (
-                  <Mic className="size-4 text-primary" />
+                  <Mic className="size-3.5 text-primary" />
                 )}
                 {isConvertingVoice
                   ? "Hinglish Converting..."
                   : isListening
                   ? "Listening..."
-                  : "Voice Typing (Bolkar Type Karen)"}
+                  : "Voice Typing"}
               </Button>
             </div>
+          </div>
+
+          {/* Quick Spoken Voice Sample Presets */}
+          <div className="flex flex-wrap items-center gap-1.5 pt-1">
+            <span className="text-[11px] font-semibold text-muted-foreground mr-1 flex items-center gap-1">
+              🗣️ Quick Voice Presets:
+            </span>
+            {[
+              "Sadak par bade potholes hain near Bistupur Market",
+              "Main water supply pipeline leak ho gaya hai Ward 14 me",
+              "Streetlights broken near Doranda College dark alley",
+              "Garbage dump overflowing near temple pilgrimage route",
+            ].map((presetText) => (
+              <button
+                key={presetText}
+                type="button"
+                onClick={async () => {
+                  setDescription(presetText);
+                  if (!title.trim()) {
+                    setTitle(presetText.slice(0, 45) + "...");
+                  }
+                  toast.success("Voice sample loaded! Enhancing with AI...");
+                  setIsEnhancing(true);
+                  try {
+                    const enhanced = await enhanceDescription(presetText);
+                    setDescription(enhanced);
+                    setIsCategorizing(true);
+                    const catResult = await categorizeChallenge(enhanced);
+                    setCategory(catResult.category);
+                  } catch (_e) {
+                  } finally {
+                    setIsEnhancing(false);
+                    setIsCategorizing(false);
+                  }
+                }}
+                className="rounded-full border border-primary/20 bg-primary/5 hover:bg-primary/10 px-2.5 py-1 text-[11px] font-medium text-primary transition-colors truncate max-w-[220px]"
+                title={`Click to load voice sample: "${presetText}"`}
+              >
+                "{presetText.slice(0, 32)}..."
+              </button>
+            ))}
           </div>
 
           {/* Active listening status / Hinglish Conversion notice */}

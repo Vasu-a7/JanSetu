@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Search, X, Filter, MapPin, Tag, ThumbsUp, Share2, UserPlus, Navigation, Calendar, Sparkles } from "lucide-react";
+import { Search, X, Filter, MapPin, Tag, ThumbsUp, Share2, UserPlus, Navigation, Calendar, Sparkles, GraduationCap, Award, ShieldCheck } from "lucide-react";
 import type { Tables } from "@/integrations/supabase/types";
 import { supabase } from "@/integrations/supabase/client";
 import { challengeCategories } from "@/lib/geminiAI";
@@ -12,6 +12,8 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { CapstoneProposalModal } from "@/components/CapstoneProposalModal";
+import { FieldVerificationModal } from "@/components/FieldVerificationModal";
 
 type Challenge = Tables<"challenges">;
 
@@ -197,6 +199,8 @@ export function FeedView() {
   // Selected challenge for details modal
   const [selectedChallenge, setSelectedChallenge] = useState<Challenge | null>(null);
   const [isVolunteered, setIsVolunteered] = useState<Record<string, boolean>>({});
+  const [isCapstoneModalOpen, setIsCapstoneModalOpen] = useState(false);
+  const [isVerificationModalOpen, setIsVerificationModalOpen] = useState(false);
 
   // Search & Filter state
   const [searchQuery, setSearchQuery] = useState("");
@@ -546,7 +550,28 @@ export function FeedView() {
               </div>
             </div>
 
-            <div className="pt-2 border-t border-border flex justify-end gap-2">
+            <div className="pt-2 border-t border-border space-y-2">
+              <div className="grid grid-cols-2 gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-1.5 text-xs font-semibold border-primary/30 text-primary hover:bg-primary/10"
+                  onClick={() => setIsCapstoneModalOpen(true)}
+                >
+                  <GraduationCap className="size-4 text-primary" />
+                  Adopt as Capstone
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-1.5 text-xs font-semibold border-emerald-500/30 text-emerald-600 hover:bg-emerald-500/10"
+                  onClick={() => setIsVerificationModalOpen(true)}
+                >
+                  <ShieldCheck className="size-4 text-emerald-600" />
+                  Field Audit Verification
+                </Button>
+              </div>
+
               <Button
                 variant={isVolunteered[selectedChallenge.id] ? "secondary" : "default"}
                 className="w-full gap-2"
@@ -561,6 +586,18 @@ export function FeedView() {
           </DialogContent>
         )}
       </Dialog>
+
+      <CapstoneProposalModal
+        isOpen={isCapstoneModalOpen}
+        onClose={() => setIsCapstoneModalOpen(false)}
+        challenge={selectedChallenge}
+      />
+
+      <FieldVerificationModal
+        isOpen={isVerificationModalOpen}
+        onClose={() => setIsVerificationModalOpen(false)}
+        challenge={selectedChallenge}
+      />
     </section>
   );
 }

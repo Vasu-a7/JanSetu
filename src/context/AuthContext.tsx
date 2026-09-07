@@ -69,14 +69,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setRole(userData.role as AppRole);
         }
       } else {
-        const { data: profileData } = await supabase
-          .from("profiles")
-          .select("*")
-          .eq("id", userId)
-          .maybeSingle();
-
-        if (profileData) {
-          setProfile(profileData);
+        // Auto-create user_data row if registered via Supabase Auth
+        const { data: authUserRes } = await supabase.auth.getUser();
+        const authUser = authUserRes?.user;
+        if (authUser && authUser.id === userId) {
+          const meta = authUser.user_metadata || {};
+          const newUserData = {
+            id: userId,
+            full_name: meta.full_name || authUser.email?.split("@")[0] || "User",
+            email: authUser.email || "",
+            organisation: meta.organisation || "",
+            role: (meta.role as AppRole) || "citizen",
+          };
+          await supabase.from("user_data").upsert(newUserData);
+          setProfile({
+            id: userId,
+            full_name: newUserData.full_name,
+            organisation: newUserData.organisation,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          });
+          setRole(newUserData.role);
         }
       }
 
@@ -235,20 +248,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       },
     });
 
-    if (!error && data.user && data.user.identities?.length === 0) {
-      return {
-        error: new Error("An account with this Gmail address already exists. Please sign in or use Forgot Password."),
-        confirmationRequired: false,
-      };
-    }
+    if (!error && data.user) {
+      if (data.user.identities?.length === 0) {
+        return {
+          error: new Error("An account with this Gmail address already exists. Please sign in or use Forgot Password."),
+          confirmationRequired: false,
+        };
+      }
 
-    if (!error) {
+      try {
+        await supabase.from("user_data").upsert({
+          id: data.user.id,
+          full_name: fullName,
+          email,
+          organisation: organisation || "",
+          role,
+        });
+      } catch (_e) {}
+
       return { error: null, confirmationRequired: Boolean(data.user && !data.session) };
     }
 
     // If Supabase server returns 500 / SMTP error when sending email:
     // Generate an authentic 6-digit confirmation OTP code for the user
-    if (/confirmation email|smtp|email rate limit|fetcherror|500/i.test(error.message)) {
+    if (error && /confirmation email|smtp|email rate limit|fetcherror|500/i.test(error.message || "")) {
       const generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
       const pendingData = {
         email,
@@ -321,6 +344,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         await supabase.from("user_data").insert({
           id: customId,
           full_name: pending.fullName,
+          email: pending.email,
           organisation: pending.organisation,
           role: pending.role,
         });

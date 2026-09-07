@@ -32,10 +32,12 @@ export function AppHeader({ title }: { title?: string }) {
   return (
     <header className="sticky top-0 z-30 border-b border-border/70 bg-background/90 backdrop-blur-md">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-4 lg:px-8">
-        <Link to="/" className="flex items-center gap-3">
-          <span className="grid size-9 place-items-center rounded-xl bg-primary text-sm font-bold text-primary-foreground shadow-xs">
-            JS
-          </span>
+        <Link to="/" className="flex items-center gap-3 group">
+          <img
+            src="/logo.png"
+            alt="JanSetu Logo"
+            className="size-10 object-contain rounded-xl shadow-xs group-hover:scale-105 transition-transform"
+          />
           <div className="flex flex-col">
             <span className="text-base font-extrabold tracking-tight text-foreground leading-tight">
               JanSetu
