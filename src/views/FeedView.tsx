@@ -34,15 +34,22 @@ function ChallengeCard({
   upvoteCount,
   isUpvoted,
   onUpvote,
+  onSelect,
+  onCapstone,
+  onAudit,
 }: {
   challenge: Challenge;
   upvoteCount: number;
   isUpvoted: boolean;
   onUpvote: (e: React.MouseEvent) => void;
+  onSelect: () => void;
+  onCapstone: (e: React.MouseEvent) => void;
+  onAudit: (e: React.MouseEvent) => void;
 }) {
   return (
     <article
-      className="group relative flex flex-col justify-between rounded-2xl border border-border bg-card p-5 shadow-xs transition-all duration-300 hover:border-primary/40 hover:shadow-md"
+      onClick={onSelect}
+      className="group relative flex flex-col justify-between rounded-2xl border border-border bg-card p-5 shadow-xs transition-all duration-300 hover:border-primary/50 hover:shadow-lg cursor-pointer"
     >
       <div>
         <div className="flex items-start justify-between gap-3">
@@ -57,7 +64,7 @@ function ChallengeCard({
           </span>
         </div>
 
-        <h2 className="mt-4 text-lg font-bold tracking-tight text-card-foreground">
+        <h2 className="mt-4 text-lg font-bold tracking-tight text-card-foreground group-hover:text-primary transition-colors">
           {challenge.title}
         </h2>
         <p className="mt-2 text-sm leading-6 text-muted-foreground line-clamp-3">
@@ -71,18 +78,36 @@ function ChallengeCard({
           <span className="truncate">{challenge.location_text ?? "Location to be confirmed"}</span>
         </p>
 
-        <button
-          type="button"
-          onClick={onUpvote}
-          className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold transition-all ${
-            isUpvoted
-              ? "bg-primary text-primary-foreground shadow-xs"
-              : "bg-muted text-muted-foreground hover:bg-primary/15 hover:text-primary"
-          }`}
-        >
-          <ThumbsUp className={`size-3.5 ${isUpvoted ? "fill-current" : ""}`} />
-          <span>{upvoteCount}</span>
-        </button>
+        <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+          <button
+            type="button"
+            onClick={onCapstone}
+            title="Adopt as Academic Capstone"
+            className="p-1.5 rounded-lg border border-border bg-muted/60 text-muted-foreground hover:text-primary hover:border-primary/40 transition-colors"
+          >
+            <GraduationCap className="size-3.5" />
+          </button>
+          <button
+            type="button"
+            onClick={onAudit}
+            title="Student Field Audit Verification"
+            className="p-1.5 rounded-lg border border-border bg-muted/60 text-muted-foreground hover:text-emerald-600 hover:border-emerald-500/40 transition-colors"
+          >
+            <ShieldCheck className="size-3.5" />
+          </button>
+          <button
+            type="button"
+            onClick={onUpvote}
+            className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold transition-all ${
+              isUpvoted
+                ? "bg-primary text-primary-foreground shadow-xs"
+                : "bg-muted text-muted-foreground hover:bg-primary/15 hover:text-primary"
+            }`}
+          >
+            <ThumbsUp className={`size-3.5 ${isUpvoted ? "fill-current" : ""}`} />
+            <span>{upvoteCount}</span>
+          </button>
+        </div>
       </div>
     </article>
   );
@@ -474,6 +499,17 @@ export function FeedView() {
               upvoteCount={upvoteCounts[challenge.id] || 0}
               isUpvoted={!!userUpvoted[challenge.id]}
               onUpvote={(e) => handleUpvote(challenge.id, e)}
+              onSelect={() => setSelectedChallenge(challenge)}
+              onCapstone={(e) => {
+                e.stopPropagation();
+                setSelectedChallenge(challenge);
+                setIsCapstoneModalOpen(true);
+              }}
+              onAudit={(e) => {
+                e.stopPropagation();
+                setSelectedChallenge(challenge);
+                setIsVerificationModalOpen(true);
+              }}
             />
           ))}
         </div>
@@ -512,6 +548,37 @@ export function FeedView() {
                 <p className="leading-6 text-muted-foreground bg-muted/30 p-3 rounded-xl border border-border">
                   {selectedChallenge.description}
                 </p>
+              </div>
+
+              {/* Interactive Resolution Roadmap */}
+              <div>
+                <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">
+                  Resolution Roadmap
+                </h4>
+                <div className="grid grid-cols-4 gap-1 text-center bg-muted/40 p-2 rounded-xl border border-border">
+                  <div className="flex flex-col items-center">
+                    <span className="size-6 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center">1</span>
+                    <span className="text-[10px] font-semibold mt-1">Reported</span>
+                  </div>
+                  <div className="flex flex-col items-center">
+                    <span className={`size-6 rounded-full text-xs font-bold flex items-center justify-center ${
+                      selectedChallenge.status !== "open" ? "bg-primary text-primary-foreground" : "bg-muted-foreground/30 text-muted-foreground"
+                    }`}>2</span>
+                    <span className="text-[10px] font-semibold mt-1">Reviewed</span>
+                  </div>
+                  <div className="flex flex-col items-center">
+                    <span className={`size-6 rounded-full text-xs font-bold flex items-center justify-center ${
+                      selectedChallenge.status === "active" || selectedChallenge.status === "resolved" ? "bg-primary text-primary-foreground" : "bg-muted-foreground/30 text-muted-foreground"
+                    }`}>3</span>
+                    <span className="text-[10px] font-semibold mt-1">Assigned</span>
+                  </div>
+                  <div className="flex flex-col items-center">
+                    <span className={`size-6 rounded-full text-xs font-bold flex items-center justify-center ${
+                      selectedChallenge.status === "resolved" ? "bg-emerald-600 text-white" : "bg-muted-foreground/30 text-muted-foreground"
+                    }`}>4</span>
+                    <span className="text-[10px] font-semibold mt-1">Resolved</span>
+                  </div>
+                </div>
               </div>
 
               {selectedChallenge.latitude && selectedChallenge.longitude && (

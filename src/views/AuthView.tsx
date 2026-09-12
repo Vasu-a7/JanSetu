@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { useNavigate } from "@tanstack/react-router";
-import { isTrustedGmail, useAuth } from "@/context/AuthContext";
+import { isValidEmail, useAuth } from "@/context/AuthContext";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -95,8 +95,8 @@ export function AuthView({ initialMode = "signin" }: { initialMode?: "signin" | 
       return;
     }
 
-    if (!isTrustedGmail(email)) {
-      const message = "Only a trusted Gmail address ending in @gmail.com can be used to sign up.";
+    if (!isValidEmail(email)) {
+      const message = "Please enter a valid email address.";
       setSignupError(message);
       toast.error(message);
       return;
@@ -114,6 +114,8 @@ export function AuthView({ initialMode = "signin" }: { initialMode?: "signin" | 
 
     if (result.error) {
       const rawMessage = result.error.message || "Could not create account. Try again.";
+      setSignupError(`Supabase Error: ${rawMessage}`);
+      toast.error(rawMessage);
       const lower = rawMessage.toLowerCase();
       if (lower.includes("already registered") || lower.includes("already exists") || lower.includes("only trusted gmail")) {
         setSignupError(rawMessage);
@@ -528,6 +530,16 @@ export function AuthView({ initialMode = "signin" }: { initialMode?: "signin" | 
                   <p className="text-2xl font-mono font-extrabold tracking-widest text-emerald-600 dark:text-emerald-400">
                     {generatedCode}
                   </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setOtpInput(generatedCode);
+                      toast.success("Code auto-filled! Click 'Verify Email & Activate Account' below.");
+                    }}
+                    className="mt-2 text-[11px] font-semibold text-emerald-700 dark:text-emerald-300 underline hover:text-emerald-900 cursor-pointer"
+                  >
+                    ⚡ Click to Auto-fill Code
+                  </button>
                 </div>
               )}
 

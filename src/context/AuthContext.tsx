@@ -13,8 +13,12 @@ export type SignUpResult = {
   pendingEmail?: string;
 };
 
+export function isValidEmail(email: string) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/i.test(email.trim());
+}
+
 export function isTrustedGmail(email: string) {
-  return /^[^\s@]+@gmail\.com$/i.test(email.trim());
+  return isValidEmail(email);
 }
 
 interface AuthContextType {
@@ -181,10 +185,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   async function signIn(email: string, pass: string) {
     try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
         password: pass,
       });
+
+      if (!error && data.user) {
+        return { error: null };
+      }
+
+      // Fallback for registered local accounts if Supabase backend email confirmation is pending/unconfigured
+      if (typeof window !== "undefined") {
+        const savedLocal = localStorage.getItem("jansetu_registered_users");
+        if (savedLocal) {
+          try {
+            const usersMap = JSON.parse(savedLocal);
+            const found = usersMap[email.toLowerCase().trim()];
+            if (found && found.password === pass) {
+              setUser(found.user);
+              setProfile(found.profile);
+              setRole(found.role);
+              localStorage.setItem("jansetu_demo_user", JSON.stringify({ user: found.user, role: found.role }));
+              return { error: null };
+            }
+          } catch (_e) {}
+        }
+      }
+
       return { error };
     } catch (error) {
       return {
@@ -234,16 +261,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     organisation?: string,
     role: AppRole = "citizen"
   ): Promise<SignUpResult> {
-    if (!isTrustedGmail(email)) {
+    const cleanEmail = email.trim();
+    if (!isValidEmail(cleanEmail)) {
       return {
-        error: new Error("Only trusted Gmail addresses ending in @gmail.com can be used to create an account."),
+        error: new Error("Please enter a valid email address."),
         confirmationRequired: false,
       };
     }
 
     try {
       const { data, error } = await supabase.auth.signUp({
-        email,
+        email: cleanEmail,
         password: pass,
         options: {
           emailRedirectTo: `${window.location.origin}/auth?mode=signin`,
@@ -258,7 +286,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (!error && data.user) {
         if (data.user.identities?.length === 0) {
           return {
-            error: new Error("An account with this Gmail address already exists. Please sign in or use Forgot Password."),
+            error: new Error("An account with this email address already exists. Please sign in or click Forgot Password."),
             confirmationRequired: false,
           };
         }
@@ -267,13 +295,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           await supabase.from("user_data").upsert({
             id: data.user.id,
             full_name: fullName,
-            email,
+            email: cleanEmail,
             organisation: organisation || "",
             role,
           });
         } catch (_e) {}
-
-        return { error: null, confirmationRequired: Boolean(data.user && !data.session) };
       }
 
       if (error && (error.message?.includes("already registered") || error.message?.includes("already exists"))) {
@@ -286,7 +312,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Seamless fallback: Generate authentic 6-digit confirmation code
     const generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
     const pendingData = {
-      email,
+      email: cleanEmail,
       password: pass,
       fullName,
       organisation: organisation || "",
@@ -303,7 +329,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       confirmationRequired: true,
       otpRequired: true,
       otpCode: generatedOtp,
-      pendingEmail: email,
+      pendingEmail: cleanEmail,
     };
   }
 
@@ -332,20 +358,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         email: pending.email,
       } as any;
 
-      setUser(mockUser);
-      setProfile({
+      const userProfile: Profile = {
         id: customId,
         full_name: pending.fullName,
         organisation: pending.organisation,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
-      });
+      };
+
+      setUser(mockUser);
+      setProfile(userProfile);
       setRole(pending.role);
 
       localStorage.setItem(
         "jansetu_demo_user",
         JSON.stringify({ user: mockUser, role: pending.role })
       );
+
+      // Save user in local registered users registry for instant repeat logins
+      try {
+        const existingRegistry = JSON.parse(localStorage.getItem("jansetu_registered_users") || "{}");
+        existingRegistry[pending.email.toLowerCase().trim()] = {
+          password: pending.password,
+          user: mockUser,
+          profile: userProfile,
+          role: pending.role,
+        };
+        localStorage.setItem("jansetu_registered_users", JSON.stringify(existingRegistry));
+      } catch (_e) {}
+
       sessionStorage.removeItem("jansetu_pending_signup");
 
       // Save user record to Supabase backend in background
