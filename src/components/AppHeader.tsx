@@ -31,15 +31,15 @@ export function AppHeader({ title }: { title?: string }) {
 
   return (
     <header className="sticky top-0 z-30 border-b border-border/70 bg-background/90 backdrop-blur-md">
-      <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-4 lg:px-8">
-        <Link to="/" className="flex items-center gap-3 group">
+      <div className="mx-auto flex max-w-6xl items-center justify-between gap-2 px-3 py-3 sm:px-5 sm:py-4 lg:px-8">
+        <Link to="/" className="flex items-center gap-2 sm:gap-3 group shrink-0">
           <img
             src="/logo.png"
             alt="JanSetu Logo"
-            className="size-10 object-contain rounded-xl shadow-xs group-hover:scale-105 transition-transform"
+            className="size-9 sm:size-10 object-contain rounded-xl shadow-xs group-hover:scale-105 transition-transform"
           />
           <div className="flex flex-col">
-            <span className="text-base font-extrabold tracking-tight text-foreground leading-tight">
+            <span className="text-sm sm:text-base font-extrabold tracking-tight text-foreground leading-tight">
               JanSetu
             </span>
             <span className="text-[10px] font-medium text-muted-foreground leading-tight hidden sm:block">
@@ -47,23 +47,23 @@ export function AppHeader({ title }: { title?: string }) {
             </span>
           </div>
         </Link>
-        <div className="relative flex items-center gap-2">
+        <div className="relative flex items-center gap-1.5 sm:gap-2">
           {searchOpen && (
             <input
               autoFocus
               type="search"
-              placeholder="Search challenges..."
+              placeholder="Search..."
               aria-label="Search challenges"
-              className="h-10 w-48 rounded-xl border border-border bg-card px-3 text-sm outline-none ring-primary/30 placeholder:text-muted-foreground focus:ring-2 sm:w-64"
+              className="h-9 sm:h-10 w-32 rounded-xl border border-border bg-card px-3 text-xs sm:text-sm outline-none ring-primary/30 placeholder:text-muted-foreground focus:ring-2 sm:w-64"
             />
           )}
           <button
             type="button"
             aria-label="Search challenges"
             onClick={() => setSearchOpen((open) => !open)}
-            className="grid size-10 place-items-center rounded-xl text-muted-foreground transition-colors hover:bg-muted hover:text-foreground cursor-pointer"
+            className="grid size-9 sm:size-10 place-items-center rounded-xl text-muted-foreground transition-colors hover:bg-muted hover:text-foreground cursor-pointer"
           >
-            <Search className="size-[18px]" strokeWidth={1.8} aria-hidden />
+            <Search className="size-4 sm:size-[18px]" strokeWidth={1.8} aria-hidden />
           </button>
           
           <div className="relative">
@@ -71,15 +71,15 @@ export function AppHeader({ title }: { title?: string }) {
               type="button"
               aria-label="View notifications"
               onClick={() => setNotifOpen((prev) => !prev)}
-              className="relative grid size-10 place-items-center rounded-xl text-muted-foreground transition-colors hover:bg-muted hover:text-foreground cursor-pointer"
+              className="relative grid size-9 sm:size-10 place-items-center rounded-xl text-muted-foreground transition-colors hover:bg-muted hover:text-foreground cursor-pointer"
             >
-              <Bell className="size-[18px]" strokeWidth={1.8} aria-hidden />
-              <span className="absolute right-2.5 top-2 size-2 rounded-full bg-amber-500 ring-2 ring-background" />
+              <Bell className="size-4 sm:size-[18px]" strokeWidth={1.8} aria-hidden />
+              <span className="absolute right-2 top-2 size-2 rounded-full bg-amber-500 ring-2 ring-background" />
             </button>
 
             {/* Notifications Dropdown Drawer */}
             {notifOpen && (
-              <div className="absolute right-0 top-12 z-50 w-80 rounded-2xl border border-border bg-card p-4 shadow-xl">
+              <div className="absolute right-0 top-11 sm:top-12 z-50 w-[calc(100vw-2rem)] max-w-xs sm:w-80 rounded-2xl border border-border bg-card p-4 shadow-xl">
                 <div className="flex items-center justify-between pb-3 border-b border-border">
                   <h3 className="text-sm font-semibold text-foreground">Notifications</h3>
                   <button

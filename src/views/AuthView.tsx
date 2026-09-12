@@ -193,19 +193,19 @@ export function AuthView({ initialMode = "signin" }: { initialMode?: "signin" | 
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col justify-center py-6 px-3.5 sm:py-12 sm:px-6 lg:px-8">
       {/* Brand Header */}
       <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
-        <div className="inline-flex items-center justify-center size-14 rounded-2xl bg-primary text-primary-foreground shadow-lg shadow-primary/30 mb-4">
-          <ShieldCheck className="size-8" />
+        <div className="inline-flex items-center justify-center size-12 sm:size-14 rounded-2xl bg-primary text-primary-foreground shadow-lg shadow-primary/30 mb-3">
+          <ShieldCheck className="size-7 sm:size-8" />
         </div>
-        <h1 className="text-3xl font-extrabold text-foreground tracking-tight">JanSetu</h1>
-        <p className="mt-1 text-sm text-muted-foreground font-medium">Connecting Citizens and Administration</p>
+        <h1 className="text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight">JanSetu</h1>
+        <p className="mt-0.5 text-xs sm:text-sm text-muted-foreground font-medium">Connecting Citizens and Administration</p>
       </div>
 
-      {/* Main Container Card (Instagram/Facebook Card Design) */}
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-card py-8 px-6 shadow-xl rounded-3xl border border-border sm:px-10 transition-all">
+      {/* Main Container Card */}
+      <div className="mt-6 sm:mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+        <div className="bg-card py-6 px-4 shadow-xl rounded-2xl sm:rounded-3xl border border-border sm:px-10 transition-all">
           
           {/* Mode Switcher Tabs */}
           {mode !== "forgot" && (

@@ -44,15 +44,15 @@ function HomePage() {
   return (
     <>
       <AppHeader />
-      <main id="main" className="mx-auto max-w-6xl px-5 pb-32 pt-8 lg:px-8 lg:pt-12 space-y-10">
+      <main id="main" className="mx-auto max-w-6xl px-3.5 sm:px-5 pb-28 pt-4 sm:pt-8 lg:px-8 lg:pt-12 space-y-8 sm:space-y-10">
         {/* HERO SECTION */}
         <section className="grid gap-6 lg:grid-cols-[1fr_340px] lg:items-center">
           <div>
-            <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3.5 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-primary">
+            <div className="mb-3 sm:mb-4 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-[11px] sm:text-xs font-semibold uppercase tracking-[0.14em] text-primary">
               <Sparkles className="size-3.5" />
               {currentDateFormatted} • JanSetu Platform
             </div>
-            <h1 className="max-w-2xl text-4xl font-bold tracking-[-0.04em] text-foreground sm:text-5xl lg:text-6xl leading-tight">
+            <h1 className="max-w-2xl text-3xl font-bold tracking-[-0.03em] text-foreground sm:text-5xl lg:text-6xl leading-tight">
               Small actions.
               <br />
               <span className="bg-gradient-to-r from-primary via-indigo-600 to-emerald-600 bg-clip-text text-transparent">

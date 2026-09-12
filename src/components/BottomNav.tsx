@@ -2,18 +2,18 @@ import { Link } from "@tanstack/react-router";
 import { Home, LayoutDashboard, PlusCircle, User } from "lucide-react";
 
 const linkClass =
-  "flex min-h-14 min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-xl px-1 text-[10px] font-semibold transition-colors";
+  "flex min-h-12 min-w-0 flex-1 flex-col items-center justify-center gap-0.5 rounded-xl px-1 text-[10px] sm:text-xs font-semibold transition-colors";
 
 const inactiveClass = `${linkClass} text-muted-foreground hover:bg-muted hover:text-foreground`;
-const activeClass = `${linkClass} bg-primary/10 text-primary`;
+const activeClass = `${linkClass} bg-primary/10 text-primary font-bold`;
 
 export function BottomNav() {
   return (
     <nav
       aria-label="Primary"
-      className="fixed inset-x-0 bottom-0 z-50 border-t border-border bg-background/95 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] pt-3 backdrop-blur-lg"
+      className="fixed inset-x-0 bottom-0 z-50 border-t border-border bg-background/95 pb-[calc(env(safe-area-inset-bottom)+0.5rem)] pt-1.5 backdrop-blur-lg shadow-lg"
     >
-      <div className="mx-auto flex max-w-md items-center gap-1 px-3">
+      <div className="mx-auto flex max-w-md items-center gap-1 px-2">
         <Link
           to="/"
           aria-label="Feed"
