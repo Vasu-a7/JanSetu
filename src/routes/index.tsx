@@ -67,24 +67,24 @@ function HomePage() {
           {/* Interactive Civic Streak & Achievements Card */}
           <div
             onClick={() => setStreakModalOpen(true)}
-            className="group relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary via-indigo-600 to-indigo-800 p-6 text-primary-foreground shadow-xl transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl cursor-pointer"
+            className="group relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-br from-primary via-indigo-600 to-indigo-800 p-4 sm:p-6 text-primary-foreground shadow-xl transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl cursor-pointer"
           >
-            <div className="flex items-start justify-between">
+            <div className="flex items-start justify-between gap-2">
               <div>
-                <p className="flex items-center gap-1.5 text-xs font-medium text-primary-foreground/80">
+                <p className="flex items-center gap-1.5 text-[11px] sm:text-xs font-medium text-primary-foreground/80">
                   <Flame className="size-4 text-amber-300 animate-pulse" />
                   Your Civic Streak
                 </p>
-                <p className="mt-2 text-4xl font-bold tracking-tight">12 days</p>
+                <p className="mt-1 sm:mt-2 text-3xl sm:text-4xl font-bold tracking-tight">12 days</p>
               </div>
-              <span className="rounded-xl bg-white/20 px-3 py-1 text-xs font-semibold backdrop-blur-md">
+              <span className="rounded-xl bg-white/20 px-2.5 py-1 text-[11px] sm:text-xs font-semibold backdrop-blur-md shrink-0">
                 Top 5% Active
               </span>
             </div>
-            <div className="mt-5 h-2.5 overflow-hidden rounded-full bg-white/20">
+            <div className="mt-4 sm:mt-5 h-2.5 overflow-hidden rounded-full bg-white/20">
               <div className="h-full w-3/4 rounded-full bg-amber-300 transition-all duration-500" />
             </div>
-            <p className="mt-3 flex items-center justify-between text-xs text-primary-foreground/80">
+            <p className="mt-3 flex flex-wrap items-center justify-between gap-1 text-[11px] sm:text-xs text-primary-foreground/80">
               <span>3 actions to Community Builder</span>
               <span className="underline group-hover:text-white font-medium">View Badges →</span>
             </p>

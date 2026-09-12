@@ -139,6 +139,16 @@ function RootShell({ children }: { children: ReactNode }) {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
+  useEffect(() => {
+    if (typeof window !== "undefined" && "serviceWorker" in navigator) {
+      void navigator.serviceWorker.getRegistrations().then((registrations) => {
+        for (const reg of registrations) {
+          void reg.update();
+        }
+      });
+    }
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
