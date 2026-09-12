@@ -124,11 +124,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" className="h-full w-full overflow-x-hidden">
+    <html lang="en" className="h-full">
       <head>
         <HeadContent />
       </head>
-      <body className="min-h-screen w-full max-w-full overflow-x-hidden bg-background text-foreground antialiased font-sans">
+      <body className="min-h-full bg-background text-foreground antialiased font-sans">
         {children}
         <Scripts />
       </body>
@@ -142,10 +142,11 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-        <OnboardingTour />
-        <Outlet />
-        <BottomNav />
+        <div className="relative flex min-h-screen flex-col overflow-x-clip pb-20 sm:pb-0">
+          <OnboardingTour />
+          <Outlet />
+          <BottomNav />
+        </div>
       </AuthProvider>
     </QueryClientProvider>
   );

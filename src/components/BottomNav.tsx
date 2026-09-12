@@ -11,9 +11,9 @@ export function BottomNav() {
   return (
     <nav
       aria-label="Primary navigation"
-      className="fixed bottom-0 left-0 right-0 z-50 w-full max-w-full border-t border-border bg-background/95 pb-[calc(env(safe-area-inset-bottom)+0.25rem)] pt-1 backdrop-blur-lg shadow-xl overflow-hidden"
+      className="fixed bottom-0 inset-x-0 z-50 w-full border-t border-border bg-background/95 pb-[calc(env(safe-area-inset-bottom)+0.35rem)] pt-1.5 backdrop-blur-lg shadow-2xl"
     >
-      <div className="mx-auto flex w-full max-w-lg items-center justify-between gap-0.5 px-1 sm:px-3">
+      <div className="mx-auto flex max-w-md items-center justify-around gap-1 px-2">
         <Link
           to="/"
           aria-label="Feed"

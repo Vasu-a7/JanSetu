@@ -362,8 +362,8 @@ export function FeedView() {
   }, [challenges]);
 
   return (
-    <section className="mx-auto w-full max-w-5xl max-w-full overflow-x-hidden px-0 sm:px-5 py-6 sm:py-10">
-      <header className="mb-6 sm:mb-8 px-1 sm:px-0">
+    <section className="mx-auto w-full max-w-5xl px-3.5 sm:px-5 py-6 sm:py-10">
+      <header className="mb-6 sm:mb-8">
         <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary">
           Community feed
         </p>
@@ -376,7 +376,7 @@ export function FeedView() {
       </header>
 
       {/* Search Bar & Status Filter */}
-      <div className="mb-6 space-y-4 max-w-full overflow-x-hidden px-1 sm:px-0">
+      <div className="mb-6 space-y-4 max-w-full overflow-x-hidden">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
           <div className="relative flex-1">
             <Search className="absolute left-3.5 top-3 size-4 text-muted-foreground pointer-events-none" />
