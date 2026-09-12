@@ -49,25 +49,25 @@ function ChallengeCard({
   return (
     <article
       onClick={onSelect}
-      className="group relative flex flex-col justify-between rounded-2xl border border-border bg-card p-5 shadow-xs transition-all duration-300 hover:border-primary/50 hover:shadow-lg cursor-pointer"
+      className="group relative flex flex-col justify-between rounded-2xl border border-border bg-card p-4 sm:p-5 shadow-xs transition-all duration-300 hover:border-primary/50 hover:shadow-lg cursor-pointer w-full max-w-full overflow-hidden break-words"
     >
       <div>
-        <div className="flex items-start justify-between gap-3">
-          <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
-            <Tag className="size-3" />
-            {challenge.category}
+        <div className="flex items-start justify-between gap-2">
+          <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-0.5 sm:px-3 sm:py-1 text-[11px] sm:text-xs font-semibold text-primary truncate max-w-[160px] sm:max-w-none">
+            <Tag className="size-3 shrink-0" />
+            <span className="truncate">{challenge.category}</span>
           </span>
           <span
-            className={`shrink-0 rounded-full border px-3 py-1 text-xs font-semibold capitalize ${statusStyles[challenge.status]}`}
+            className={`shrink-0 rounded-full border px-2.5 py-0.5 sm:px-3 sm:py-1 text-[10px] sm:text-xs font-semibold capitalize ${statusStyles[challenge.status]}`}
           >
             {formatStatus(challenge.status)}
           </span>
         </div>
 
-        <h2 className="mt-4 text-lg font-bold tracking-tight text-card-foreground group-hover:text-primary transition-colors">
+        <h2 className="mt-3 sm:mt-4 text-base sm:text-lg font-bold tracking-tight text-card-foreground group-hover:text-primary transition-colors line-clamp-2 break-words">
           {challenge.title}
         </h2>
-        <p className="mt-2 text-sm leading-6 text-muted-foreground line-clamp-3">
+        <p className="mt-1.5 sm:mt-2 text-xs sm:text-sm leading-5 sm:leading-6 text-muted-foreground line-clamp-3 break-words">
           {challenge.description}
         </p>
       </div>
@@ -362,21 +362,21 @@ export function FeedView() {
   }, [challenges]);
 
   return (
-    <section className="mx-auto w-full max-w-5xl px-5 py-8 sm:py-10">
-      <header className="mb-8">
+    <section className="mx-auto w-full max-w-5xl max-w-full overflow-x-hidden px-0 sm:px-5 py-6 sm:py-10">
+      <header className="mb-6 sm:mb-8 px-1 sm:px-0">
         <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary">
           Community feed
         </p>
-        <h1 className="mt-2 text-3xl font-semibold tracking-tight text-foreground">
+        <h1 className="mt-1 sm:mt-2 text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
           Current challenges
         </h1>
-        <p className="mt-2 max-w-xl text-sm leading-6 text-muted-foreground">
+        <p className="mt-1.5 max-w-xl text-xs sm:text-sm leading-5 sm:leading-6 text-muted-foreground">
           See what your community is working on and find a way to contribute.
         </p>
       </header>
 
       {/* Search Bar & Status Filter */}
-      <div className="mb-6 space-y-4">
+      <div className="mb-6 space-y-4 max-w-full overflow-x-hidden px-1 sm:px-0">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
           <div className="relative flex-1">
             <Search className="absolute left-3.5 top-3 size-4 text-muted-foreground pointer-events-none" />
@@ -415,7 +415,7 @@ export function FeedView() {
         </div>
 
         {/* Category Pills */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar">
+        <div className="w-full max-w-full overflow-x-auto flex items-center gap-1.5 pb-1.5 no-scrollbar shrink-0">
           <button
             type="button"
             onClick={() => setSelectedCategory("All")}
